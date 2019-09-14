@@ -41,6 +41,37 @@ public class TargetVisitChecker {
     public static int getTargetWithinRange(final double[] latitudes, final double[] longitudes, final int[] path,
                                            final double currentLatitude, final double currentLongitude,
                                            final int range) {
+        int bestDist = 0;
+        int index = 0;
+        String remaining = "";
+
+        for (int i = 0; i < latitudes.length; i++) {
+            int count = 0;
+            for (int p = 0; p < path.length; p++) {
+                if (i == path[p]) {
+                    count++;
+                    break;
+                }
+            }
+            if (count == 0) {
+                remaining += i;
+            }
+            count = 0;
+        }
+
+        int[] rem = new int[remaining.length()];
+        for (int i = 0; i < remaining.length(); i++) {
+            rem[i] = remaining.charAt(i);
+        }
+
+        for (int i = 0; i < rem.length; i++) {
+            double oneLatitude = currentLatitude;
+            double oneLongitude = currentLongitude;
+            double otherLatitude = latitudes[rem[i]];
+            double otherLongitude = longitudes[rem[i]];
+            double dist = LatLngUtils.distance(oneLatitude, oneLongitude, otherLatitude, otherLongitude);
+        }
+
         // HINT: To find the distance in meters between two locations, use a provided helper function:
         // LatLngUtils.distance(oneLatitude, oneLongitude, otherLatitude, otherLongitude)
         return -1;
@@ -90,3 +121,4 @@ public class TargetVisitChecker {
     }
 
 }
+
