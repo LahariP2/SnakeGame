@@ -1,5 +1,8 @@
 package edu.illinois.cs.cs125.fall2019.mp;
 
+import java.util.ArrayList;
+//import java.util.Arrays;
+
 /**
  * Holds methods for managing a path of target claims.
  * <p>
@@ -41,9 +44,11 @@ public class TargetVisitChecker {
     public static int getTargetWithinRange(final double[] latitudes, final double[] longitudes, final int[] path,
                                            final double currentLatitude, final double currentLongitude,
                                            final int range) {
-        int bestDist = 0;
-        int index = 0;
-        String remaining = "";
+        //double bestDist = 0;
+        //int index = 0;
+        //String remaining = "";
+
+        ArrayList<Integer> unVisited = new ArrayList<Integer>();
 
         for (int i = 0; i < latitudes.length; i++) {
             int count = 0;
@@ -51,26 +56,38 @@ public class TargetVisitChecker {
                 if (i == path[p]) {
                     count++;
                     break;
+                } else {
+                    continue;
                 }
             }
             if (count == 0) {
-                remaining += i;
+                unVisited.add(i);
             }
             count = 0;
         }
 
-        int[] rem = new int[remaining.length()];
-        for (int i = 0; i < remaining.length(); i++) {
-            rem[i] = remaining.charAt(i);
-        }
+        //System.out.println("String " + remaining);
 
-        for (int i = 0; i < rem.length; i++) {
+        /*int[] rem = new int[remaining.length()];
+        for (int i = 0; i < remaining.length(); i++) {
+            rem[i] = Integer.parseInt(new String(new char[]{remaining.charAt(i)}));
+        }*/
+
+        //System.out.println("Array " + unVisited.toString());
+        //System.out.println("Path " + Arrays.toString(path));
+
+
+        for (int i = 0; i < unVisited.size(); i++) {
             double oneLatitude = currentLatitude;
             double oneLongitude = currentLongitude;
-            double otherLatitude = latitudes[rem[i]];
-            double otherLongitude = longitudes[rem[i]];
+            double otherLatitude = latitudes[unVisited.get(i)];
+            double otherLongitude = longitudes[unVisited.get(i)];
             double dist = LatLngUtils.distance(oneLatitude, oneLongitude, otherLatitude, otherLongitude);
+            if (dist < range) {
+                return unVisited.get(i);
+            }
         }
+
 
         // HINT: To find the distance in meters between two locations, use a provided helper function:
         // LatLngUtils.distance(oneLatitude, oneLongitude, otherLatitude, otherLongitude)
@@ -117,6 +134,12 @@ public class TargetVisitChecker {
      * @return the index in the path array that was updated, or -1 if the path array was full
      */
     public static int visitTarget(final int[] path, final int targetIndex) {
+        for (int i = 0; i < path.length; i++) {
+            if (path[i] == -1) {
+                path[i] = targetIndex;
+                return i;
+            }
+        }
         return -1;
     }
 
