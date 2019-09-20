@@ -1,7 +1,7 @@
 package edu.illinois.cs.cs125.fall2019.mp;
 
 import java.util.ArrayList;
-//import java.util.Arrays;
+import java.util.Arrays;
 
 /**
  * Holds methods for managing a path of target claims.
@@ -121,8 +121,41 @@ public class TargetVisitChecker {
         // HINT: To determine whether two lines cross, use a provided helper function:
         // LineCrossDetector.linesCross(oneStartLat, oneStartLng, oneEndLat, oneEndLng,
         //                              otherStartLat, otherStartLng, otherEndLat, otherEndLng)
+
+        //System.out.println("1");
+        int currentIndex = 0;
+        for (int i = 0; i < path.length; i++) {
+            if (path[i] == -1) {
+                currentIndex = i;
+                break;
+            }
+        }
+        //System.out.println("2");
+
+        if (currentIndex <= 1) {
+            return true;
+        }
+        System.out.println("currentIndex" + currentIndex);
+
+        for (int i = 0; i < path.length - 1; i++) {
+            if (path[i] != -1 && path[i + 1] != -1) {
+                System.out.println("Path " + Arrays.toString(path));
+
+                if (LineCrossDetector.linesCross(latitudes[path[i]], longitudes[path[i]],
+                        latitudes[path[i + 1]], longitudes[path[i + 1]],
+                        latitudes[path[currentIndex - 1]], longitudes[path[currentIndex - 1]],
+                        latitudes[tryVisit], longitudes[tryVisit])) {
+                    System.out.println("cross");
+                    return false;
+                }
+                //System.out.println("Path " + Arrays.toString(path));
+            }
+
+        }
+        System.out.println("Path end" + Arrays.toString(path));
         return true;
     }
+
 
     /**
      * Marks a target captured by putting its index in the first available (-1) slot of the path array.

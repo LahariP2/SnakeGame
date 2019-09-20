@@ -177,7 +177,11 @@ public final class GameActivity extends AppCompatActivity {
         map.getUiSettings().setMapToolbarEnabled(false);
 
         // Use the provided placeMarker function to add a marker at every target's location
-        // HINT: onCreate initializes the relevant arrays (targetLats, targetLngs, path) for you
+        for (int i = 0; i < targetLats.length; i++) {
+            placeMarker(targetLats[i], targetLngs[i]);
+        }
+
+        /* HINT: onCreate initializes the relevant arrays (targetLats, targetLngs, path) for you */
     }
 
     /**
@@ -187,6 +191,7 @@ public final class GameActivity extends AppCompatActivity {
      * @param latitude the phone's current latitude
      * @param longitude the phone's current longitude
      */
+    @SuppressWarnings("checkstyle:EmptyBlock")
     @VisibleForTesting // Actually just visible for documentation - not called directly by test suites
     public void updateLocation(final double latitude, final double longitude) {
         // This function is responsible for updating the game state and map according to the user's movements
@@ -195,10 +200,32 @@ public final class GameActivity extends AppCompatActivity {
         // You can call them by prefixing their names with "TargetVisitChecker." e.g. TargetVisitChecker.visitTarget
         // The arrays to operate on are targetLats, targetLngs, and path
 
+        int caught = 0;
         // When the player gets within the PROXIMITY_THRESHOLD of a target, it should be captured and turned green
+        int capture = TargetVisitChecker.getTargetWithinRange(
+                targetLats, targetLngs, path, latitude, longitude, PROXIMITY_THRESHOLD);
+        System.out.println("capture " + capture);
+        if (capture != -1 && TargetVisitChecker.checkSnakeRule(targetLats, targetLngs, path, capture)) {
+            caught = TargetVisitChecker.visitTarget(path, capture);
+            System.out.println("caught index in path " + caught);
+            //System.out.println("1");
+            changeMarkerColor(targetLats[capture], targetLngs[capture], CAPTURED_MARKER_HUE);
+            System.out.println("2");
+            //placeMarker(targetLats[capture], targetLngs[capture]);
+        }
+
+        //
         // Sequential captures should create green connecting lines on the map
         // HINT: Use the provided changeMarkerColor and addLine functions to manipulate the map
         // HINT: Use the provided color constants near the top of this file as arguments to those functions
+        //
+
+        if (caught != 0) {
+            addLine(targetLats[path[caught]], targetLngs[path[caught]],
+                    targetLats[path[caught - 1]], targetLngs[path[caught - 1]], PLAYER_COLOR);
+            System.out.println("3");
+        }
+
     }
 
     /**
