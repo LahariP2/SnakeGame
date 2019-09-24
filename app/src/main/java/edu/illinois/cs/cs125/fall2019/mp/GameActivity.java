@@ -115,6 +115,8 @@ public final class GameActivity extends AppCompatActivity {
         });
         Log.i(TAG, "getMapAsync started");
 
+        // Recent commit
+        // Hello!
         // Set up a receiver for location-update messages from the service (LocationListenerService)
         locationUpdateReceiver = new BroadcastReceiver() {
             @Override
