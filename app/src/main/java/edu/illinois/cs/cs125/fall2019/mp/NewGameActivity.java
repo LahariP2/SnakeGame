@@ -116,6 +116,7 @@ public final class NewGameActivity extends AppCompatActivity {
 
         // Complete this function so that it populates the Intent with the user's settings (using putExtra)
         // If the user has set all necessary settings, launch the GameActivity and finish this activity
+        System.out.println(intent.describeContents());
     }
 
 }
