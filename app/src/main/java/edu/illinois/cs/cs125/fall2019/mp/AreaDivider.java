@@ -6,7 +6,9 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.PolylineOptions;
 
-
+/**
+ * This class contains functions to divide the area into cells with the same sizes.
+ */
 public class AreaDivider {
 
     /** Latitude of the northern boundary. */
@@ -24,6 +26,14 @@ public class AreaDivider {
     /** The length of each side of a cell in meters. */
     private double cellSize;
 
+    /**
+     * This is the constructor.
+     * @param setNorth This is the requested latitude for the northern boundary
+     * @param setEast This is the requested longitude for the eastern boundary
+     * @param setSouth This is the requested latitude for the southern boundary
+     * @param setWest This is the requested longitude for the western boundary
+     * @param setCellSize This is the requested length of each side of a cell
+     */
     AreaDivider(final double setNorth, final double setEast, final double setSouth,
                 final double setWest, final double setCellSize) {
         this.north = setNorth;
