@@ -3,9 +3,14 @@ package edu.illinois.cs.cs125.fall2019.mp;
 import android.content.Intent;
 import android.graphics.Point;
 import androidx.appcompat.app.AppCompatActivity;
+
 import android.os.Bundle;
 import android.util.TypedValue;
+import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+//import android.widget.RadioButton;
+import android.widget.RadioGroup;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -75,6 +80,33 @@ public final class NewGameActivity extends AppCompatActivity {
          * lambdas for functions with a non-void return type need return statements, again like
          * normal functions.
          */
+
+        // Suppose modeGroup is a RadioGroup variable (maybe an instance variable?)
+
+        System.out.println("1");
+        RadioGroup modeGroup = findViewById(R.id.gameModeGroup);
+        System.out.println("2");
+        LinearLayout targetLayout = (LinearLayout) findViewById(R.id.targetSettings);
+        targetLayout.setVisibility(View.GONE);
+        LinearLayout areaLayout = (LinearLayout) findViewById(R.id.areaSettings);
+        areaLayout.setVisibility(View.GONE);
+        modeGroup.setOnCheckedChangeListener((unused, checkedId) -> {
+            System.out.println("3");
+            // checkedId is the R.id constant of the currently checked RadioButton
+            // Your code here: make only the selected mode's settings group visible
+            if (checkedId == R.id.targetModeOption) {
+                System.out.println("4");
+                areaLayout.setVisibility(View.GONE);
+                targetLayout.setVisibility(View.VISIBLE);
+            }
+            if (checkedId == R.id.areaModeOption) {
+                System.out.println("5");
+                targetLayout.setVisibility(View.GONE);
+                areaLayout.setVisibility(View.VISIBLE);
+            }
+
+        });
+
     }
 
     /**

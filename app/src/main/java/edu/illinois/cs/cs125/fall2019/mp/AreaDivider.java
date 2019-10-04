@@ -27,7 +27,7 @@ public class AreaDivider {
     private double cellSize;
 
     /**
-     * This is the constructor.
+     * This is the constructor.activity_main.xml.
      * @param setNorth This is the requested latitude for the northern boundary
      * @param setEast This is the requested longitude for the eastern boundary
      * @param setSouth This is the requested latitude for the southern boundary

@@ -4,8 +4,12 @@ import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
 
 import com.google.gson.JsonObject;
+
+//import java_cup.Main;
 
 /**
  * Represents the main screen of the app, where the user will be able to view invitations and enter games.
@@ -26,9 +30,18 @@ public final class MainActivity extends AppCompatActivity {
         // This activity doesn't do anything yet - it immediately launches the game activity
         // Work on it will start in Checkpoint 1
 
+        Button createGame = findViewById(R.id.createGame);
+        createGame.setVisibility(View.VISIBLE);
+
+        createGame.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(final View v) {
+                startActivity(new Intent(MainActivity.this, NewGameActivity.class));
+            }
+        });
         // Intents are Android's way of specifying what to do/launch
         // Here we create an Intent for launching GameActivity and act on it with startActivity
-        startActivity(new Intent(this, GameActivity.class));
+        // startActivity(new Intent(this, GameActivity.class));
         // End this activity so that it's removed from the history
         // Otherwise pressing the back button in the game would come back to a blank screen here
         finish();
