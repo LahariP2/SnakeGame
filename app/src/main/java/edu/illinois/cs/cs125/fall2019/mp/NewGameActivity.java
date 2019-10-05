@@ -8,8 +8,12 @@ import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 //import android.widget.RadioButton;
+//import android.widget.RadioButton;
+//import android.widget.RadioButton;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -83,24 +87,23 @@ public final class NewGameActivity extends AppCompatActivity {
 
         // Suppose modeGroup is a RadioGroup variable (maybe an instance variable?)
 
-        System.out.println("1");
         RadioGroup modeGroup = findViewById(R.id.gameModeGroup);
-        System.out.println("2");
+
         LinearLayout targetLayout = (LinearLayout) findViewById(R.id.targetSettings);
         targetLayout.setVisibility(View.GONE);
+
         LinearLayout areaLayout = (LinearLayout) findViewById(R.id.areaSettings);
         areaLayout.setVisibility(View.GONE);
+
         modeGroup.setOnCheckedChangeListener((unused, checkedId) -> {
-            System.out.println("3");
             // checkedId is the R.id constant of the currently checked RadioButton
             // Your code here: make only the selected mode's settings group visible
             if (checkedId == R.id.targetModeOption) {
-                System.out.println("4");
                 areaLayout.setVisibility(View.GONE);
                 targetLayout.setVisibility(View.VISIBLE);
             }
+
             if (checkedId == R.id.areaModeOption) {
-                System.out.println("5");
                 targetLayout.setVisibility(View.GONE);
                 areaLayout.setVisibility(View.VISIBLE);
             }
@@ -143,12 +146,75 @@ public final class NewGameActivity extends AppCompatActivity {
      * Code to run when the Create Game button is clicked.
      */
     private void createGameClicked() {
-        // Set up an Intent that will launch GameActivity
-        Intent intent = new Intent(this, GameActivity.class);
+        //Intent intent = new Intent();
+        // Checking if mode was selected
 
-        // Complete this function so that it populates the Intent with the user's settings (using putExtra)
+        RadioButton targetButton = findViewById(R.id.targetModeOption);
+        boolean targetCheck = targetButton.isChecked();
+
+        RadioButton areaButton = findViewById(R.id.areaModeOption);
+        boolean areaCheck = areaButton.isChecked();
+
+
+
+        if (targetCheck) {
+
+            EditText pTinTarget = findViewById(R.id.proximityThreshold);
+            String valueStr = pTinTarget.getText().toString();
+
+            if (valueStr.trim().length() != 0) {
+
+                Intent intent = new Intent(this, GameActivity.class);
+                finish();
+
+                // Complete this function so that it populates the Intent with the user's settings (using putExtra)
+                intent.putExtra("mode", "target");
+
+                if (intent.getStringExtra("mode").equals("target")) {
+
+                    // Proximity Threshold
+                    int number = Integer.parseInt(valueStr);
+                    intent.putExtra("proximityThreshold", number);
+                }
+
+                startActivity(intent);
+
+            }
+
+        }
+        if (areaCheck) {
+
+            EditText cSinArea = findViewById(R.id.cellSize);
+            String value = cSinArea.getText().toString();
+
+            if (value.trim().length() != 0) {
+
+                Intent intent = new Intent(this, GameActivity.class);
+                finish();
+
+                // Complete this function so that it populates the Intent with the user's settings (using putExtra)
+                intent.putExtra("mode", "area");
+
+                // Boundaries
+                LatLngBounds bounds = areaMap.getProjection().getVisibleRegion().latLngBounds;
+                intent.putExtra("areaNorth", bounds.northeast.latitude);
+                intent.putExtra("areaSouth", bounds.southwest.latitude);
+                intent.putExtra("areaEast", bounds.northeast.longitude);
+                intent.putExtra("areaWest", bounds.southwest.longitude);
+
+                // Cell Size
+                int cellSize = Integer.parseInt(value);
+                System.out.println("Cell Size:    " + cellSize);
+                intent.putExtra("cellSize", cellSize);
+
+                startActivity(intent);
+
+            }
+        }
+
+
         // If the user has set all necessary settings, launch the GameActivity and finish this activity
-        System.out.println(intent.describeContents());
+        //System.out.println(intent.describeContents());
     }
 
 }
