@@ -1,5 +1,7 @@
 package edu.illinois.cs.cs125.fall2019.mp;
 
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -44,9 +46,6 @@ public class TargetVisitChecker {
     public static int getTargetWithinRange(final double[] latitudes, final double[] longitudes, final int[] path,
                                            final double currentLatitude, final double currentLongitude,
                                            final int range) {
-        //double bestDist = 0;
-        //int index = 0;
-        //String remaining = "";
 
         ArrayList<Integer> unVisited = new ArrayList<Integer>();
 
@@ -66,23 +65,19 @@ public class TargetVisitChecker {
             count = 0;
         }
 
-        //System.out.println("String " + remaining);
-
-        /*int[] rem = new int[remaining.length()];
-        for (int i = 0; i < remaining.length(); i++) {
-            rem[i] = Integer.parseInt(new String(new char[]{remaining.charAt(i)}));
-        }*/
-
-        //System.out.println("Array " + unVisited.toString());
-        //System.out.println("Path " + Arrays.toString(path));
-
 
         for (int i = 0; i < unVisited.size(); i++) {
             double oneLatitude = currentLatitude;
             double oneLongitude = currentLongitude;
             double otherLatitude = latitudes[unVisited.get(i)];
             double otherLongitude = longitudes[unVisited.get(i)];
+            LatLng one = new LatLng(oneLatitude, oneLongitude);
+            LatLng two  = new LatLng(otherLatitude, otherLongitude);
+
             double dist = LatLngUtils.distance(oneLatitude, oneLongitude, otherLatitude, otherLongitude);
+
+            dist = LatLngUtils.distance(one, two);
+
             if (dist < range) {
                 return unVisited.get(i);
             }

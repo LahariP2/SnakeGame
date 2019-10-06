@@ -19,6 +19,8 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.WindowManager;
+//import android.widget.EditText;
+//import android.widget.RadioButton;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -26,8 +28,11 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptor;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+//import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.PolygonOptions;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
@@ -80,6 +85,51 @@ public final class GameActivity extends AppCompatActivity {
     private List<Marker> markers = new ArrayList<>();
 
     /**
+     * North.
+     */
+    private double north;
+
+    /**
+     * East.
+     */
+    private double east;
+
+    /**
+     * South.
+     */
+    private double south;
+
+    /**
+     * West.
+     */
+    private double west;
+
+    /**
+     * Cell Size.
+     */
+    private int cellSize;
+
+    /**
+     * This is the areaDivider.
+     */
+    private AreaDivider areaDivider;
+
+    /**
+     * Checks which cells are captured.
+     */
+    private boolean[][] cellCaptured;
+
+    /**
+     * previous x.
+     */
+    private int xPrev;
+
+    /**
+     * previous y.
+     */
+    private int yPrev;
+
+    /**
      * Called by the Android system when the activity is created. Performs initial setup.
      * @param savedInstanceState saved state from the last terminated instance (unused)
      */
@@ -92,11 +142,43 @@ public final class GameActivity extends AppCompatActivity {
         // Create the UI from the activity_game.xml layout file (in src/main/res/layout)
         setContentView(R.layout.activity_game);
 
-        // Create the coordinate and path arrays
-        targetLats = DefaultTargets.getLatitudes(this);
-        targetLngs = DefaultTargets.getLongitudes(this);
-        path = new int[targetLats.length];
-        Arrays.fill(path, -1); // No targets visited initially
+        Intent intent = getIntent();
+        String mode = intent.getStringExtra("mode");
+
+        if (mode.equals("area")) {
+
+            north = intent.getDoubleExtra("areaNorth", 0.0);
+            east = intent.getDoubleExtra("areaEast", 0.0);
+            south = intent.getDoubleExtra("areaSouth", 0.0);
+            west = intent.getDoubleExtra("areaWest", 0.0);
+            cellSize = intent.getIntExtra("cellSize", 0);
+
+            areaDivider = new AreaDivider(north, east, south, west, cellSize);
+
+            int xcells = areaDivider.getXCells();
+            int ycells = areaDivider.getYCells();
+            cellCaptured = new boolean[xcells][ycells];
+            for (int i = 0; i < cellCaptured.length; i++) {
+                for (int j = 0; j < cellCaptured[i].length; j++) {
+                    cellCaptured[i][j] = false;
+                }
+            }
+
+            xPrev = -1;
+            yPrev = -1;
+
+        }
+
+        if (mode.equals("target")) {
+            // Create the coordinate and path arrays
+            targetLats = DefaultTargets.getLatitudes(this);
+            targetLngs = DefaultTargets.getLongitudes(this);
+            path = new int[targetLats.length];
+            Arrays.fill(path, -1); // No targets visited initially
+        }
+
+
+
 
         // Find the Google Maps UI component ("fragment")
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
@@ -167,6 +249,22 @@ public final class GameActivity extends AppCompatActivity {
      */
     @SuppressWarnings("MissingPermission")
     private void setUpMap() {
+
+        Intent intent = getIntent();
+        String mode = intent.getStringExtra("mode");
+        if (mode.equals("area")) {
+            areaDivider.renderGrid(map);
+        }
+
+        if (mode.equals("target")) {
+
+            // Use the provided placeMarker function to add a marker at every target's location
+            for (int i = 0; i < targetLats.length; i++) {
+                placeMarker(targetLats[i], targetLngs[i]);
+            }
+        }
+
+
         Log.i(TAG, "Entered setUpMap");
         if (hasLocationPermission) {
             // Can only enable the blue My Location dot if the location permission is granted
@@ -178,10 +276,6 @@ public final class GameActivity extends AppCompatActivity {
         map.getUiSettings().setIndoorLevelPickerEnabled(false);
         map.getUiSettings().setMapToolbarEnabled(false);
 
-        // Use the provided placeMarker function to add a marker at every target's location
-        for (int i = 0; i < targetLats.length; i++) {
-            placeMarker(targetLats[i], targetLngs[i]);
-        }
 
         /* HINT: onCreate initializes the relevant arrays (targetLats, targetLngs, path) for you */
     }
@@ -202,31 +296,99 @@ public final class GameActivity extends AppCompatActivity {
         // You can call them by prefixing their names with "TargetVisitChecker." e.g. TargetVisitChecker.visitTarget
         // The arrays to operate on are targetLats, targetLngs, and path
 
-        int caught = 0;
-        // When the player gets within the PROXIMITY_THRESHOLD of a target, it should be captured and turned green
-        int capture = TargetVisitChecker.getTargetWithinRange(
-                targetLats, targetLngs, path, latitude, longitude, PROXIMITY_THRESHOLD);
-        System.out.println("capture " + capture);
-        if (capture != -1 && TargetVisitChecker.checkSnakeRule(targetLats, targetLngs, path, capture)) {
-            caught = TargetVisitChecker.visitTarget(path, capture);
-            System.out.println("caught index in path " + caught);
-            //System.out.println("1");
-            changeMarkerColor(targetLats[capture], targetLngs[capture], CAPTURED_MARKER_HUE);
-            System.out.println("2");
-            //placeMarker(targetLats[capture], targetLngs[capture]);
+        Intent intent = getIntent();
+        String mode = intent.getStringExtra("mode");
+
+        if (mode.equals("area")) {
+            LatLng capturelocation = new LatLng(latitude, longitude);
+
+            int whichCellX = areaDivider.getXCoordinate(capturelocation);
+            int whichCellY = areaDivider.getYCoordinate(capturelocation);
+
+            boolean canBe = false;
+
+            System.out.println(areaDivider.getXCells());
+
+            if (whichCellX < areaDivider.getXCells() && whichCellX >= 0
+                    && whichCellY < areaDivider.getYCells() && whichCellY >= 0) {
+
+                System.out.println("In boudnaries");
+                if ((xPrev == -1 && yPrev == -1) || ((Math.abs(xPrev - whichCellX) == 1) && (yPrev - whichCellY == 0))
+                        || ((Math.abs(yPrev - whichCellY) == 1) && (xPrev - whichCellX == 0))) {
+
+                    System.out.println("Condition 1");
+                    if (cellCaptured[whichCellX][whichCellY] == false) {
+                        canBe = true;
+                    }
+                }
+
+
+                if (canBe) {
+
+                    System.out.println("captured");
+                    PolygonOptions pO = new PolygonOptions();
+                    LatLngBounds cellBounds = areaDivider.getCellBounds(whichCellX, whichCellY);
+                    LatLng sWPoint = cellBounds.southwest;
+                    LatLng nEPoint = cellBounds.northeast;
+                    double southLat = sWPoint.latitude;
+                    double westLong = sWPoint.longitude;
+                    double northLat = nEPoint.latitude;
+                    double eastLong = nEPoint.longitude;
+                    LatLng nWPoint = new LatLng(northLat, westLong);
+                    LatLng sEPoint = new LatLng(southLat, eastLong);
+
+                    pO.add(sWPoint, sEPoint, nEPoint, nWPoint);
+                    pO.fillColor(PLAYER_COLOR);
+                    map.addPolygon(pO);
+
+                    System.out.println("drawn");
+                    xPrev = whichCellX;
+                    yPrev = whichCellY;
+
+                    cellCaptured[xPrev][yPrev] = true;
+
+                }
+
+            }
+
         }
 
-        //
-        // Sequential captures should create green connecting lines on the map
-        // HINT: Use the provided changeMarkerColor and addLine functions to manipulate the map
-        // HINT: Use the provided color constants near the top of this file as arguments to those functions
-        //
+        if (mode.equals("target")) {
 
-        if (caught != 0) {
-            addLine(targetLats[path[caught]], targetLngs[path[caught]],
-                    targetLats[path[caught - 1]], targetLngs[path[caught - 1]], PLAYER_COLOR);
-            System.out.println("3");
+            int number = intent.getIntExtra("proximityThreshold", 0);
+
+            System.out.println("PT:  " + number);
+
+            int caught = 0;
+            // When the player gets within the PROXIMITY_THRESHOLD of a target, it should be captured and turned green
+            int capture = TargetVisitChecker.getTargetWithinRange(
+                    targetLats, targetLngs, path, latitude, longitude, number);
+            System.out.println("capture " + capture);
+            if (capture != -1 && TargetVisitChecker.checkSnakeRule(targetLats, targetLngs, path, capture)) {
+                caught = TargetVisitChecker.visitTarget(path, capture);
+                System.out.println("caught index in path " + caught);
+                //System.out.println("1");
+                changeMarkerColor(targetLats[capture], targetLngs[capture], CAPTURED_MARKER_HUE);
+                System.out.println("2");
+                //placeMarker(targetLats[capture], targetLngs[capture]);
+            }
+
+
+
+            //
+            // Sequential captures should create green connecting lines on the map
+            // HINT: Use the provided changeMarkerColor and addLine functions to manipulate the map
+            // HINT: Use the provided color constants near the top of this file as arguments to those functions
+            //
+
+            if (caught != 0) {
+                addLine(targetLats[path[caught]], targetLngs[path[caught]],
+                        targetLats[path[caught - 1]], targetLngs[path[caught - 1]], PLAYER_COLOR);
+                System.out.println("3");
+            }
         }
+
+
 
     }
 

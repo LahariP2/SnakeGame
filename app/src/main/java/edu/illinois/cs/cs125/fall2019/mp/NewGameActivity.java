@@ -155,7 +155,7 @@ public final class NewGameActivity extends AppCompatActivity {
         RadioButton areaButton = findViewById(R.id.areaModeOption);
         boolean areaCheck = areaButton.isChecked();
 
-
+        Intent intent = new Intent();
 
         if (targetCheck) {
 
@@ -164,7 +164,7 @@ public final class NewGameActivity extends AppCompatActivity {
 
             if (valueStr.trim().length() != 0) {
 
-                Intent intent = new Intent(this, GameActivity.class);
+                intent = new Intent(this, GameActivity.class);
                 finish();
 
                 // Complete this function so that it populates the Intent with the user's settings (using putExtra)
@@ -189,7 +189,7 @@ public final class NewGameActivity extends AppCompatActivity {
 
             if (value.trim().length() != 0) {
 
-                Intent intent = new Intent(this, GameActivity.class);
+                intent = new Intent(this, GameActivity.class);
                 finish();
 
                 // Complete this function so that it populates the Intent with the user's settings (using putExtra)
@@ -214,7 +214,7 @@ public final class NewGameActivity extends AppCompatActivity {
 
 
         // If the user has set all necessary settings, launch the GameActivity and finish this activity
-        //System.out.println(intent.describeContents());
+        System.out.println(intent.describeContents());
     }
 
 }

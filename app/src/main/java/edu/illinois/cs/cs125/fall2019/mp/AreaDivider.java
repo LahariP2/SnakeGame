@@ -89,10 +89,16 @@ public class AreaDivider {
     /**
      *
      * @param location The location of a point with a specific Latitude and Longitude
-     * @return This functionr eturns the x coordinate of the point's cell
+     * @return This function returns the x coordinate of the point's cell
      */
     public int getXCoordinate(final LatLng location) {
         double distance = LatLngUtils.distance(south, east, south, west);
+        if (location.longitude < west) {
+            return -1;
+        }
+        if (location.latitude < 0) {
+            return -1;
+        }
         double actualSize = distance / getXCells();
         double ptDist = LatLngUtils.distance(location.latitude, west, location.latitude, location.longitude);
         return (int) Math.floor(ptDist / actualSize);
