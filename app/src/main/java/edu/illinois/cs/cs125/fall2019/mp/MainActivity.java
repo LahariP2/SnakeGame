@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.Toast;
 
 import com.google.gson.JsonObject;
 
@@ -39,6 +40,9 @@ public final class MainActivity extends AppCompatActivity {
                 startActivity(new Intent(MainActivity.this, NewGameActivity.class));
             }
         });
+        findViewById(R.id.ongoingGamesGroup).setVisibility(View.GONE);
+        findViewById(R.id.invitationsGroup).setVisibility(View.GONE);
+
         // Intents are Android's way of specifying what to do/launch
         // Here we create an Intent for launching GameActivity and act on it with startActivity
         // startActivity(new Intent(this, GameActivity.class));
@@ -56,6 +60,15 @@ public final class MainActivity extends AppCompatActivity {
         // Make any "loading" UI adjustments you like
         // Use WebApi.startRequest to fetch the games lists
         // In the response callback, call setUpUi with the received data
+        WebApi.startRequest(this, WebApi.API_BASE + "/games", response -> {
+            // Code in this handler will run when the request completes successfully
+            // Do something with the response?
+            setUpUi(response);
+        }, error -> {
+            // Code in this handler will run if the request fails
+            // Maybe notify the user of the error?
+                Toast.makeText(this, "Oh no!", Toast.LENGTH_LONG).show();
+            });
     }
 
     /**
