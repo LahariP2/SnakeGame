@@ -66,6 +66,7 @@ public class TargetVisitChecker {
         }
 
         // Latest commit
+        // Latest commit
 
         for (int i = 0; i < unVisited.size(); i++) {
             double oneLatitude = currentLatitude;
