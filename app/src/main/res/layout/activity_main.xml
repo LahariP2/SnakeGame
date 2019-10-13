@@ -13,6 +13,25 @@
         android:orientation="vertical" >
 
         <LinearLayout
+            android:id="@+id/invitationsGroup"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/invitationsList"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="vertical"></LinearLayout>
+
+            <TextView
+                android:id="@+id/invitations"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Invitations" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/ongoingGamesGroup"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -37,24 +56,6 @@
             android:layout_height="wrap_content"
             android:text="Create Game" />
 
-        <LinearLayout
-            android:id="@+id/invitationsGroup"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="vertical">
-
-            <LinearLayout
-                android:id="@+id/invitationsList"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical"></LinearLayout>
-
-            <TextView
-                android:id="@+id/invitations"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Invitations" />
-        </LinearLayout>
     </LinearLayout>
 
 </ScrollView>

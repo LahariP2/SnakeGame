@@ -4,10 +4,17 @@ import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+//import android.provider.ContactsContract;
 import android.view.View;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 //import java_cup.Main;
@@ -43,6 +50,8 @@ public final class MainActivity extends AppCompatActivity {
         findViewById(R.id.ongoingGamesGroup).setVisibility(View.GONE);
         findViewById(R.id.invitationsGroup).setVisibility(View.GONE);
 
+        connect();
+
         // Intents are Android's way of specifying what to do/launch
         // Here we create an Intent for launching GameActivity and act on it with startActivity
         // startActivity(new Intent(this, GameActivity.class));
@@ -76,6 +85,120 @@ public final class MainActivity extends AppCompatActivity {
      * @param result parsed JSON from the server
      */
     private void setUpUi(final JsonObject result) {
+
+        FirebaseUser me = FirebaseAuth.getInstance().getCurrentUser();
+
+        JsonArray games = result.get("games").getAsJsonArray();
+
+        for (JsonElement g : games) {
+
+            JsonObject objg = ((JsonObject) g);
+
+            if (objg.get("state").getAsInt() == GameStateID.ENDED) {
+                continue;
+
+            } else if (objg.get("state").getAsInt() == GameStateID.PAUSED
+                    || objg.get("state").getAsInt() == GameStateID.RUNNING) {
+
+                JsonArray players = objg.get("players").getAsJsonArray();
+
+                for (JsonElement p : players) {
+
+                    JsonObject meP = ((JsonObject) p);
+
+                    if (me.getEmail().equals((meP).get("email").getAsString())) {
+
+                        if (meP.get("state").getAsInt() == PlayerStateID.INVITED) {
+
+                            //inflate chunk(3.2) done
+                            View invitationsChunk = getLayoutInflater().inflate(R.layout.chunk_invitations,
+                                    findViewById(R.id.invitationsList), false);
+
+                            //add info(3.4) done
+                            TextView emailI = invitationsChunk.findViewById(R.id.iEmail);
+                            String ownerEmail = objg.get("owner").getAsString();
+                            emailI.setText(ownerEmail);
+
+                            TextView colorI = invitationsChunk.findViewById(R.id.iColor);
+                            int color = meP.get("team").getAsInt();
+                            if (color == TeamID.OBSERVER) {
+                                colorI.setText("Observer");
+                            }
+                            if (color == TeamID.TEAM_BLUE) {
+                                colorI.setText("Blue");
+                            }
+                            if (color == TeamID.TEAM_GREEN) {
+                                colorI.setText("Green");
+                            }
+                            if (color == TeamID.TEAM_RED) {
+                                colorI.setText("Red");
+                            }
+                            if (color == TeamID.TEAM_YELLOW) {
+                                colorI.setText("Yellow");
+                            }
+
+                            TextView modeI = invitationsChunk.findViewById(R.id.iMode);
+                            String mode = objg.get("mode").getAsString();
+                            modeI.setText(mode + " mode");
+
+                            // add chunk to invite linlayout(3.3)
+                            LinearLayout iLL = findViewById(R.id.invitationsList);
+                            iLL.addView(invitationsChunk);
+
+                            findViewById(R.id.invitationsGroup).setVisibility(View.VISIBLE);
+                            iLL.setVisibility(View.VISIBLE);
+
+                        }
+
+                        if (meP.get("state").getAsInt() == PlayerStateID.ACCEPTED
+                                || meP.get("state").getAsInt() == PlayerStateID.PLAYING) {
+
+                            //inflate chunk(3.2) done
+                            View ongoingChunk = getLayoutInflater().inflate(R.layout.chunk_ongoing_game,
+                                    findViewById(R.id.ongoingGamesList), false);
+
+                            //add info(3.4) done
+                            TextView emailO = ongoingChunk.findViewById(R.id.oEmail);
+                            String ownerEmail = objg.get("owner").getAsString();
+                            emailO.setText(ownerEmail);
+
+                            TextView colorO = ongoingChunk.findViewById(R.id.oColor);
+                            int color = meP.get("team").getAsInt();
+                            if (color == TeamID.OBSERVER) {
+                                colorO.setText("Observer");
+                            }
+                            if (color == TeamID.TEAM_BLUE) {
+                                colorO.setText("Blue");
+                            }
+                            if (color == TeamID.TEAM_GREEN) {
+                                colorO.setText("Green");
+                            }
+                            if (color == TeamID.TEAM_RED) {
+                                colorO.setText("Red");
+                            }
+                            if (color == TeamID.TEAM_YELLOW) {
+                                colorO.setText("Yellow");
+                            }
+
+                            TextView modeO = ongoingChunk.findViewById(R.id.oMode);
+                            String mode = objg.get("mode").getAsString();
+                            modeO.setText(mode + " mode");
+
+                            // add chunk to invite linlayout(3.3) done
+                            LinearLayout oLL = findViewById(R.id.ongoingGamesList);
+                            oLL.addView(ongoingChunk);
+
+                            findViewById(R.id.ongoingGamesGroup).setVisibility(View.VISIBLE);
+                            oLL.setVisibility(View.VISIBLE);
+                        }
+                    }
+                }
+            }
+
+
+
+        }
+
         // Hide any optional "loading" UI you added
         // Clear the games lists
         // Add UI chunks to the lists based on the result data
