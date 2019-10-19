@@ -240,6 +240,10 @@ public final class MainActivity extends AppCompatActivity {
         // Do not finish - the user should be able to come back here
     }
 
+    /**
+     *
+     * @param str The string contains the game Id information and the status of the buttons
+     */
     public void callPost(final String str) {
 
         WebApi.startRequest(this, WebApi.API_BASE + ("/games/" + str), Request.Method.POST, null, response -> {
