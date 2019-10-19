@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.volley.Request;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.gson.JsonArray;
@@ -69,6 +70,11 @@ public final class MainActivity extends AppCompatActivity {
         // Make any "loading" UI adjustments you like
         // Use WebApi.startRequest to fetch the games lists
         // In the response callback, call setUpUi with the received data
+        LinearLayout invitationsList = findViewById(R.id.invitationsList);
+        LinearLayout ongoingList = findViewById(R.id.ongoingGamesList);
+        invitationsList.removeAllViews();
+        ongoingList.removeAllViews();
+
         WebApi.startRequest(this, WebApi.API_BASE + "/games", response -> {
             // Code in this handler will run when the request completes successfully
             // Do something with the response?
@@ -141,6 +147,13 @@ public final class MainActivity extends AppCompatActivity {
                             String mode = objg.get("mode").getAsString();
                             modeI.setText(mode + " mode");
 
+                            // 5.3:
+                            Button accept = invitationsChunk.findViewById(R.id.accept);
+                            Button decline = invitationsChunk.findViewById(R.id.decline);
+
+                            accept.setOnClickListener(unused -> callPost(objg.get("id").getAsString() + "/accept"));
+                            decline.setOnClickListener(unused -> callPost(objg.get("id").getAsString() + "/decline"));
+
                             // add chunk to invite linlayout(3.3)
                             LinearLayout iLL = findViewById(R.id.invitationsList);
                             iLL.addView(invitationsChunk);
@@ -184,6 +197,17 @@ public final class MainActivity extends AppCompatActivity {
                             String mode = objg.get("mode").getAsString();
                             modeO.setText(mode + " mode");
 
+                            // 5.3:
+                            Button leave = ongoingChunk.findViewById(R.id.leave);
+                            Button enter = ongoingChunk.findViewById(R.id.enter);
+
+                            leave.setOnClickListener(unused -> callPost(objg.get("id").getAsString() + "/leave"));
+                            enter.setOnClickListener(unused -> enterGame(objg.get("id").getAsString()));
+
+                            if (me.getEmail().equals(ownerEmail)) {
+                                leave.setVisibility(View.GONE);
+                            }
+
                             // add chunk to invite linlayout(3.3) done
                             LinearLayout oLL = findViewById(R.id.ongoingGamesList);
                             oLL.addView(ongoingChunk);
@@ -209,8 +233,26 @@ public final class MainActivity extends AppCompatActivity {
      * @param gameId the ID of the game to enter
      */
     private void enterGame(final String gameId) {
+        Intent intent = new Intent(this, GameActivity.class);
+        intent.putExtra("game", gameId);
+        startActivity(intent);
         // Launch GameActivity with the game ID in an intent extra
         // Do not finish - the user should be able to come back here
     }
 
+    public void callPost(final String str) {
+
+        WebApi.startRequest(this, WebApi.API_BASE + ("/games/" + str), Request.Method.POST, null, response -> {
+            // Code in this handler will run when the request completes successfully
+            // Do something with the response?
+            connect();
+        }, error -> {
+            // Code in this handler will run if the request fails
+            // Maybe notify the user of the error?
+                Toast.makeText(this, "Oh no!", Toast.LENGTH_LONG).show();
+            });
+
+
+
+    }
 }
