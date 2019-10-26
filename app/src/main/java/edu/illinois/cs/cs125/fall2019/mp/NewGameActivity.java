@@ -21,6 +21,11 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents the game creation screen, where the user configures a new game.
@@ -32,6 +37,9 @@ public final class NewGameActivity extends AppCompatActivity {
     /** The Google Maps view used to set the area for area mode. Null until getMapAsync finishes. */
     private GoogleMap areaMap;
 
+    /** The Google Maps view used to set the area for target mode. Null until getMapAsync finishes. */
+
+    private GoogleMap targetMap;
     /**
      * Called by the Android system when the activity is created.
      * @param savedInstanceState state from the previously terminated instance (unused)
@@ -57,6 +65,61 @@ public final class NewGameActivity extends AppCompatActivity {
             // Center it on campustown
             centerMap(areaMap);
         });
+
+        SupportMapFragment targetsMapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.targetsMap);
+        // Start the process of getting a Google Maps object
+        targetsMapFragment.getMapAsync(newMap -> {
+
+            List<Marker> markerList = new ArrayList<>();
+
+            // Set the map variable so it can be used by other functions
+            targetMap = newMap;
+            // Center it on campustown
+            centerMap(targetMap);
+
+            targetMap.setOnMapLongClickListener(location -> {
+                // Code here runs whenever the user presses on the map.
+                // location is the LatLng position where the user pressed.
+                // 1. Create a Google Maps Marker at the provided coordinates.
+
+                Marker m = targetMap.addMarker(new MarkerOptions().position(location));
+
+                // 2. Add it to your targets list instance variable.
+                markerList.add(m);
+
+            });
+
+            targetMap.setOnMarkerClickListener(clickedMarker -> {
+                // Code here runs whenever the user taps a marker.
+                // clickedMarker is the Marker object the user clicked.
+                // 1. Remove the marker from the map with its remove function.
+
+                clickedMarker.remove();
+
+                // 2. Remove it from your targets list.
+                for (int i = 0; i <  markerList.size(); i++) {
+                    if (markerList.get(i) == clickedMarker) {
+                        markerList.remove(i);
+                        break;
+                    }
+                }
+                return true; // This makes Google Maps not pan the map again
+            });
+
+
+        });
+
+
+
+
+
+
+
+
+
+
+
 
         /*
          * Setting an ID for a control in the UI designer produces a constant on R.id

@@ -18,6 +18,12 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
+            <fragment
+                android:id="@+id/targetsMap"
+                class="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="300dp" />
+
             <EditText
                 android:id="@+id/proximityThreshold"
                 android:layout_width="match_parent"
