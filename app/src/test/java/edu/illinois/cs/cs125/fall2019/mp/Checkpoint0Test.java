@@ -280,6 +280,8 @@ public class Checkpoint0Test {
         }
     }
 
+    // Most recent commit
+    
     @Test(timeout = 60000)
     @Graded(points = 20)
     public void testSnakeRule() throws Throwable {
