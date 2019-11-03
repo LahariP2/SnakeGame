@@ -237,6 +237,7 @@ public final class NewGameActivity extends AppCompatActivity {
                 new LatLng(neLatitude, neLongitude)), windowSize.x, (int) heightPx, paddingPx));
     }
 
+    // latest commit"
     /**
      * Code to run when the Create Game button is clicked.
      */
