@@ -24,24 +24,18 @@ public class LineCrossDetector {
      * This ignores the roundness of the earth, but it's undetectable at reasonable scales of the game.
      * <p>
      * All parameters are assumed to be valid: both lines have positive length.
-     * @param firstStartLat the latitude of the start of one line
-     * @param firstStartLng the longitude of the start of that line
-     * @param firstEndLat the latitude of the end of that line
-     * @param firstEndLng the longitude of the end of that line
-     * @param secondStartLat the latitude of the start of another line
-     * @param secondStartLng the longitude of the start of that other line
-     * @param secondEndLat the latitude of the end of that other line
-     * @param secondEndLng the longitude of the end of that other line
+     * @param firstStart an endpoint of one line
+     * @param firstEnd the other endpoint of that line
+     * @param secondStart an endpoint of another line
+     * @param secondEnd the other endpoint of that other line
      * @return whether the two lines cross
      */
-    public static boolean linesCross(final double firstStartLat, final double firstStartLng,
-                                     final double firstEndLat, final double firstEndLng,
-                                     final double secondStartLat, final double secondStartLng,
-                                     final double secondEndLat, final double secondEndLng) {
-        if (LatLngUtils.same(firstStartLat, firstStartLng, secondStartLat, secondStartLng)
-                || LatLngUtils.same(firstStartLat, firstStartLng, secondEndLat, secondEndLng)
-                || LatLngUtils.same(firstEndLat, firstEndLng, secondStartLat, secondStartLng)
-                || LatLngUtils.same(firstEndLat, firstEndLng, secondEndLat, secondEndLng)) {
+    public static boolean linesCross(final LatLng firstStart, final LatLng firstEnd,
+                                     final LatLng secondStart, final LatLng secondEnd) {
+        if (LatLngUtils.same(firstStart, secondStart)
+                || LatLngUtils.same(firstStart, secondEnd)
+                || LatLngUtils.same(firstEnd, secondStart)
+                || LatLngUtils.same(firstEnd, secondEnd)) {
             // The lines are just sharing endpoints, not crossing each other
             return false;
         }
@@ -114,7 +108,7 @@ public class LineCrossDetector {
             // The non-vertical line is completely off to the side of the vertical line
             return false;
         }
-        double slope = lineSlope(lineStartLat, lineStartLng, lineEndLat, lineEndLng);
+        double slope = lineSlope(new LatLng(lineStartLat, lineStartLng), new LatLng(lineEndLat, lineEndLng));
         double yAtVert = slope * (verticalLng - lineStartLng) + lineStartLat;
         if (LatLngUtils.same(yAtVert, verticalStartLat) || LatLngUtils.same(yAtVert, verticalEndLat)) {
             // Ends on the middle of the non-vertical line
