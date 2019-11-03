@@ -133,15 +133,16 @@ public final class MainActivity extends AppCompatActivity {
                             if (color == TeamID.TEAM_BLUE) {
                                 colorI.setText("Blue");
                             }
+                            if (color == TeamID.TEAM_YELLOW) {
+                                colorI.setText("Yellow");
+                            }
                             if (color == TeamID.TEAM_GREEN) {
                                 colorI.setText("Green");
                             }
                             if (color == TeamID.TEAM_RED) {
                                 colorI.setText("Red");
                             }
-                            if (color == TeamID.TEAM_YELLOW) {
-                                colorI.setText("Yellow");
-                            }
+
 
                             TextView modeI = invitationsChunk.findViewById(R.id.iMode);
                             String mode = objg.get("mode").getAsString();
@@ -183,15 +184,16 @@ public final class MainActivity extends AppCompatActivity {
                             if (color == TeamID.TEAM_BLUE) {
                                 colorO.setText("Blue");
                             }
+                            if (color == TeamID.TEAM_YELLOW) {
+                                colorO.setText("Yellow");
+                            }
                             if (color == TeamID.TEAM_GREEN) {
                                 colorO.setText("Green");
                             }
                             if (color == TeamID.TEAM_RED) {
                                 colorO.setText("Red");
                             }
-                            if (color == TeamID.TEAM_YELLOW) {
-                                colorO.setText("Yellow");
-                            }
+
 
                             TextView modeO = ongoingChunk.findViewById(R.id.oMode);
                             String mode = objg.get("mode").getAsString();

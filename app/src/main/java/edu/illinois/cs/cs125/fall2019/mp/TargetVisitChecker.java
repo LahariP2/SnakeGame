@@ -138,10 +138,12 @@ public class TargetVisitChecker {
             if (path[i] != -1 && path[i + 1] != -1) {
                 System.out.println("Path " + Arrays.toString(path));
 
-                if (LineCrossDetector.linesCross(latitudes[path[i]], longitudes[path[i]],
-                        latitudes[path[i + 1]], longitudes[path[i + 1]],
-                        latitudes[path[currentIndex - 1]], longitudes[path[currentIndex - 1]],
-                        latitudes[tryVisit], longitudes[tryVisit])) {
+                LatLng a = new LatLng(path[i], longitudes[path[i]]);
+                LatLng b = new LatLng(latitudes[path[i + 1]], latitudes[path[i + 1]]);
+                LatLng c = new LatLng(latitudes[path[currentIndex - 1]], longitudes[path[currentIndex - 1]]);
+                LatLng d = new LatLng(latitudes[tryVisit], longitudes[tryVisit]);
+
+                if (LineCrossDetector.linesCross(a, b, c, d)) {
                     System.out.println("cross");
                     return false;
                 }

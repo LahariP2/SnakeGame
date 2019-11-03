@@ -1,5 +1,7 @@
 package edu.illinois.cs.cs125.fall2019.mp;
 
+import com.google.android.gms.maps.model.LatLng;
+
 /**
  * Holds a method to determine whether two lines cross.
  * <p>
@@ -44,6 +46,16 @@ public class LineCrossDetector {
             return false;
         }
 
+        double firstStartLng = firstStart.longitude;
+        double firstEndLng = firstEnd.longitude;
+        double secondStartLng = secondStart.longitude;
+        double secondEndLng = secondEnd.longitude;
+
+        double firstStartLat = firstStart.latitude;
+        double firstEndLat = firstEnd.latitude;
+        double secondStartLat = secondStart.latitude;
+        double secondEndLat = secondEnd.latitude;
+
         // A line is vertical (purely north-south) if its longitude is constant
         boolean firstVertical = LatLngUtils.same(firstStartLng, firstEndLng);
         boolean secondVertical = LatLngUtils.same(secondStartLng, secondEndLng);
@@ -59,8 +71,8 @@ public class LineCrossDetector {
         }
 
         // At this point, neither line is vertical
-        double firstSlope = lineSlope(firstStartLat, firstStartLng, firstEndLat, firstEndLng);
-        double secondSlope = lineSlope(secondStartLat, secondStartLng, secondEndLat, secondEndLng);
+        double firstSlope = lineSlope(firstStart, firstEnd);
+        double secondSlope = lineSlope(secondStart, secondEnd);
         if (LatLngUtils.same(firstSlope, secondSlope)) {
             // They're parallel
             return false;
@@ -115,15 +127,12 @@ public class LineCrossDetector {
 
     /**
      * Determines the slope of a non-vertical line.
-     * @param startLat the latitude of one endpoint of the line
-     * @param startLng the longitude of that endpoint
-     * @param endLat the latitude of the other endpoint of the line
-     * @param endLng the longitude of that other endpoint
+     * @param start one endpoint of the line
+     * @param end the other endpoint of the line
      * @return the slope, treating longitude as X and latitude as Y
      */
-    private static double lineSlope(final double startLat, final double startLng,
-                                    final double endLat, final double endLng) {
-        return (endLat - startLat) / (endLng - startLng);
+    private static double lineSlope(final LatLng start, final LatLng end) {
+        return (end.latitude - start.latitude) / (end.longitude - start.longitude);
     }
 
 }

@@ -382,8 +382,8 @@ public final class GameActivity extends AppCompatActivity {
             //
 
             if (caught != 0) {
-                addLine(targetLats[path[caught]], targetLngs[path[caught]],
-                        targetLats[path[caught - 1]], targetLngs[path[caught - 1]], PLAYER_COLOR);
+                addLine(new LatLng(path[caught], targetLngs[path[caught]]),
+                        new LatLng(path[caught - 1], targetLngs[path[caught - 1]]), PLAYER_COLOR);
                 System.out.println("3");
             }
         }
@@ -394,18 +394,13 @@ public final class GameActivity extends AppCompatActivity {
 
     /**
      * Adds a colored line to the Google map.
-     * @param startLat the latitude of one endpoint of the line
-     * @param startLng the longitude of that endpoint
-     * @param endLat the latitude of the other endpoint of the line
-     * @param endLng the longitude of that other endpoint
+     * @param start the LatLng of one endpoint of the line
+     * @param end the LatLng of that endpoint
      * @param color the color to fill the line with
      */
     @VisibleForTesting
-    public void addLine(final double startLat, final double startLng,
-                        final double endLat, final double endLng, final int color) {
+    public void addLine(final LatLng start, final LatLng end, final int color) {
         // Convert the loose coordinates to a Google Maps LatLng object
-        LatLng start = new LatLng(startLat, startLng);
-        LatLng end = new LatLng(endLat, endLng);
 
         // Configure and add a colored line
         final int lineThickness = 12;

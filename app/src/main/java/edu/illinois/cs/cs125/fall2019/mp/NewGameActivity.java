@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.TypedValue;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -15,7 +16,11 @@ import android.widget.LinearLayout;
 //import android.widget.RadioButton;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.Toast;
 
+import com.android.volley.Request;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
@@ -23,6 +28,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+
+//import com.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +51,22 @@ public final class NewGameActivity extends AppCompatActivity {
     /** The Google Maps view used to set the area for target mode. Null until getMapAsync finishes. */
 
     private GoogleMap targetMap;
+
+    /**
+     * intent.
+     */
+    private Intent intent;
+
+    /**
+     * Array of Invited People.
+     */
+    private List<Invitee> inviteeList;
+
+    /**
+     * List<Marker> markerList.
+     */
+    private List<Marker> markerList;
+
     /**
      * Called by the Android system when the activity is created.
      * @param savedInstanceState state from the previously terminated instance (unused)
@@ -66,12 +93,14 @@ public final class NewGameActivity extends AppCompatActivity {
             centerMap(areaMap);
         });
 
+
+
         SupportMapFragment targetsMapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.targetsMap);
         // Start the process of getting a Google Maps object
         targetsMapFragment.getMapAsync(newMap -> {
 
-            List<Marker> markerList = new ArrayList<>();
+            markerList = new ArrayList<>();
 
             // Set the map variable so it can be used by other functions
             targetMap = newMap;
@@ -107,19 +136,22 @@ public final class NewGameActivity extends AppCompatActivity {
                 return true; // This makes Google Maps not pan the map again
             });
 
-
         });
 
 
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
+        inviteeList = new ArrayList<>();
+        inviteeList.add(new Invitee(user.getEmail(), TeamID.OBSERVER));
 
+        updatePlayersUI();
 
-
-
-
-
-
-
+        Button addInvitee = findViewById(R.id.addInvitee);
+        addInvitee.setOnClickListener(new View.OnClickListener() {
+            public void onClick(final View v) {
+                addInvitee();
+            }
+        });
 
         /*
          * Setting an ID for a control in the UI designer produces a constant on R.id
@@ -212,15 +244,34 @@ public final class NewGameActivity extends AppCompatActivity {
         //Intent intent = new Intent();
         // Checking if mode was selected
 
+        JsonObject objJ = new JsonObject();
+        JsonArray inviteelist = new JsonArray();
+
+        JsonArray targetList = new JsonArray();
+
         RadioButton targetButton = findViewById(R.id.targetModeOption);
         boolean targetCheck = targetButton.isChecked();
 
         RadioButton areaButton = findViewById(R.id.areaModeOption);
         boolean areaCheck = areaButton.isChecked();
 
-        Intent intent = new Intent();
+        intent = new Intent();
+
+        for (int i = 0; i < inviteeList.size(); i++) {
+            JsonObject newObj = new JsonObject();
+            //property email
+            newObj.addProperty("email", inviteeList.get(i).getEmail());
+            //property team
+            newObj.addProperty("team", inviteeList.get(i).getTeamId());
+            //adding to inviteelist
+            inviteelist.add(newObj);
+        }
+
+        objJ.add("invitees", inviteelist);
 
         if (targetCheck) {
+
+            objJ.addProperty("mode", "target");
 
             EditText pTinTarget = findViewById(R.id.proximityThreshold);
             String valueStr = pTinTarget.getText().toString();
@@ -228,7 +279,7 @@ public final class NewGameActivity extends AppCompatActivity {
             if (valueStr.trim().length() != 0) {
 
                 intent = new Intent(this, GameActivity.class);
-                finish();
+                //finish();
 
                 // Complete this function so that it populates the Intent with the user's settings (using putExtra)
                 intent.putExtra("mode", "target");
@@ -238,14 +289,46 @@ public final class NewGameActivity extends AppCompatActivity {
                     // Proximity Threshold
                     int number = Integer.parseInt(valueStr);
                     intent.putExtra("proximityThreshold", number);
+
+                    objJ.addProperty("proximityThreshold", number);
+
                 }
 
-                startActivity(intent);
+                //startActivity(intent);
 
             }
 
+            for (int i = 0; i < markerList.size(); i++) {
+                JsonObject objO = new JsonObject();
+                //property latitude
+                objO.addProperty("latitude", markerList.get(i).getPosition().latitude);
+                //property longitude
+                objO.addProperty("longitude", markerList.get(i).getPosition().longitude);
+                //adding to target list different from invitee list
+                targetList.add(objO);
+            }
+
+            objJ.add("targets", targetList);
+
+            WebApi.startRequest(this, WebApi.API_BASE + ("/games/create"), Request.Method.POST, objJ, response -> {
+                // Code in this handler will run when the request completes successfully
+                // Do something with the response?
+                intent.putExtra("game", response.get("game").getAsString());
+                // starting activity with new intent
+                startActivity(intent);
+                //finish activitiy
+                finish();
+
+            }, error -> {
+                // Code in this handler will run if the request fails
+                // Maybe notify the user of the error?
+                    Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                });
+
         }
         if (areaCheck) {
+
+            objJ.addProperty("mode", "area");
 
             EditText cSinArea = findViewById(R.id.cellSize);
             String value = cSinArea.getText().toString();
@@ -253,7 +336,7 @@ public final class NewGameActivity extends AppCompatActivity {
             if (value.trim().length() != 0) {
 
                 intent = new Intent(this, GameActivity.class);
-                finish();
+                //finish();
 
                 // Complete this function so that it populates the Intent with the user's settings (using putExtra)
                 intent.putExtra("mode", "area");
@@ -270,14 +353,118 @@ public final class NewGameActivity extends AppCompatActivity {
                 System.out.println("Cell Size:    " + cellSize);
                 intent.putExtra("cellSize", cellSize);
 
-                startActivity(intent);
+                objJ.addProperty("cellSize", cellSize);
+
+                // areaNorth, areaSouth, areaEast, areaWest
+
+                objJ.addProperty("areaNorth", bounds.northeast.latitude);
+                objJ.addProperty("areaSouth", bounds.southwest.latitude);
+                objJ.addProperty("areaEast", bounds.northeast.longitude);
+                objJ.addProperty("areaWest", bounds.southwest.longitude);
+
+                WebApi.startRequest(this, WebApi.API_BASE + ("/games/create"), Request.Method.POST, objJ, response -> {
+                    // Code in this handler will run when the request completes successfully
+                    // Do something with the response?
+                    intent.putExtra("game", response.get("game").getAsString());
+                    //starting intent activity
+                    startActivity(intent);
+                    finish();
+
+                }, error -> {
+                    // Code in this handler will run if the request fails
+                    // Maybe notify the user of the error?
+                        Toast.makeText(this, error.getMessage(), Toast.LENGTH_LONG).show();
+                    });
+
+                //startActivity(intent);
 
             }
         }
 
 
+
         // If the user has set all necessary settings, launch the GameActivity and finish this activity
         System.out.println(intent.describeContents());
+
+
+
+    }
+
+    /**
+     * Update Players UI function.
+     */
+    public void updatePlayersUI() {
+        //System.out.println("Came here");
+        System.out.println("Current list  " + inviteeList);
+
+        LinearLayout playersList = findViewById(R.id.playersList);
+        playersList.removeAllViews();
+
+        for (int i = 0; i < inviteeList.size(); i++) {
+            View inviteeChunk = getLayoutInflater().inflate(R.layout.chunk_invitee,
+                    findViewById(R.id.playersList), false);
+
+            Invitee current = inviteeList.get(i);
+
+            TextView inviteeEmail = inviteeChunk.findViewById(R.id.inviteeEmail);
+            inviteeEmail.setText(current.getEmail());
+
+            int num = i;
+
+            Spinner inviteeTeam = inviteeChunk.findViewById(R.id.inviteeTeam);
+            inviteeTeam.setSelection(current.getTeamId());
+
+            inviteeTeam.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(final AdapterView<?> parent, final View view,
+                                           final int position, final long id) {
+                    current.setTeamId(position);
+                }
+
+                @Override
+                public void onNothingSelected(final AdapterView<?> parent) {
+                    // Called when the selection becomes empty
+                    // Not relevant to the MP - can be left blank
+                }
+            });
+
+            Button removeButton = inviteeChunk.findViewById(R.id.removeInvitee);
+            if (num == 0) {
+                removeButton.setVisibility(View.GONE);
+            } else {
+                removeButton.setOnClickListener(new View.OnClickListener() {
+                    public void onClick(final View v) {
+
+                        removeButton.setVisibility(View.VISIBLE);
+                        inviteeList.remove(current);
+                        updatePlayersUI();
+
+                    }
+                });
+            }
+
+            playersList.addView(inviteeChunk);
+
+        }
+
+    }
+
+    /**
+     * Add Invitee function.
+     */
+    public void addInvitee() {
+
+        //edit text not text view
+        EditText newInviteeEmail = findViewById(R.id.newInviteeEmail);
+
+        //checking whether its empty or not empty and has email input
+        if (!newInviteeEmail.getText().toString().equals("")) {
+            inviteeList.add(new Invitee((newInviteeEmail.getText().toString()), TeamID.OBSERVER));
+        }
+
+        newInviteeEmail.setText("");
+
+        updatePlayersUI();
     }
 
 }
